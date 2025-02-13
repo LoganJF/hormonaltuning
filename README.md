@@ -46,3 +46,44 @@ for date in SSUS_exps:
     all_data.append(segs)
 print('Total time to process data: ', time()-start_time)
 ```
+
+See the documentation, or example folder, for more examples, or in python call help(functionname) to pull up the docstrings of the relevant functions
+
+hormonaltuning is currently in development; some features have not yet been implemented.
+See 'Development status' below.
+
+Requirements
+------------
+scipy
+
+numpy
+
+pandas
+
+matplotlib
+
+seaborn
+
+sklearn
+
+stns [will ultimately be removed]
+
+
+Quick start
+-----------
+
+hormonaltuning will be able to be installed using pip [~March 2025]:
+
+    $ pip install hormonaltuning
+
+If you want to run the latest version of the code, you can install from git:
+
+    $mkdir hormonaltuning
+    $cd hormonaltuning
+    $git clone https://github.com/LoganJF/hormonaltuning.git .
+    $python setup.py install
+
+
+Development status
+------------------
+Beta testing currently 0.0.1
