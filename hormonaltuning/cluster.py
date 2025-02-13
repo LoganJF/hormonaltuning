@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from hormonaltuning.io import (load_and_combine_close_long_IC,
                                load_spikes)
+
 from hormonaltuning.util import (remove_first_minute_spike_data,
                                  format_spikes_variable_length_exps_to_15mins,
                                  apply_diff_append_nan_pandas,
@@ -9,6 +10,7 @@ from hormonaltuning.util import (remove_first_minute_spike_data,
                                  return_only_desired_neurons,
                                  reformat_decile_data
                                  )
+
 from hormonaltuning.extractfeatures import (pad_end_long_IC,
                                             create_phase_space_arr_from_long_IC,
                                             split_spike_data_into_list_of_segments,
@@ -18,6 +20,7 @@ from hormonaltuning.extractfeatures import (pad_end_long_IC,
                                             calculate_long_IC_phase_each_spike
                                             )
 
+# TODO: Add in spike_df argument so they can skip loading LF uses
 def feature_extraction_preprocessing_pipeline(date, cond, paths=None,
                                               filler_value=-100,
                                               segment_duration_seconds=120,
