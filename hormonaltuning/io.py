@@ -1,3 +1,10 @@
+"""io.py Input/Output functions to aid in analyses done for (Fickling et al., 2025)
+author: Logan James Fickling github.com/LoganJF
+
+TODO: Come up with more sensible loading scheme. Perhaps have a function for the path finding stuff, and just call that?
+"""
+
+
 import numpy as np
 import pandas as pd
 from glob import glob
@@ -6,14 +13,14 @@ from hormonaltuning.util import format_20min_exps_to_15mins, reorder_df, formatt
 __all__ = ['load_long_IC', 'load_spikes', 'load_burst_dataframe_from_date', 'load_and_combine_close_long_IC']
 
 def load_long_IC(date='10-21', conditions='all', paths=None, long_burst_dur=1):
-    """
+    """Load GMR-timed IC bursts data from properly formatted .csv files
 
-    :param date:
-    :param conditions:
+    :param date: str, date of experiment
+    :param conditions: str, by default 'all' and returns all conditions; string of condition(s) to return
     :param paths: str, must be of specific format for glob.glob to find; {} is replaced with the date,
                 * is any character e.g. '/Users/loganfickling/Downloads/Hemo*/{}*/csvs/*spike*'
-    :param long_burst_dur:
-    :return:
+    :param long_burst_dur: int, default 1, time in seconds of minimum criteria for GMR-timed burst
+    :return: long_ic; pd.DataFrame with only long IC Bursts
     """
     _pn, ic = load_burst_dataframe_from_date(date=date, conditions=conditions, paths=paths)
     _pn = format_20min_exps_to_15mins(_pn)
@@ -22,46 +29,49 @@ def load_long_IC(date='10-21', conditions='all', paths=None, long_burst_dur=1):
 
 
 def load_spikes(date='10-21', conditions='all', paths=None):
-    """
+    """Load spike data from properly formatted .csv files
 
-    :param date:
-    :param conditions:
+    :param date: str, date of experiment
+    :param conditions: str, by default 'all' and returns all conditions; string of condition(s) to return
     :param paths: str, must be of specific format for glob.glob to find; {} is replaced with the date,
-                * is any character e.g. '/Users/loganfickling/Downloads/Hemo*/{}*/csvs/*spike*'
-    :return:
+                  * is any character e.g. '/Users/loganfickling/Downloads/Hemo*/{}*/csvs/*spike*'
+
+    :return: spike_df; pd.DataFrame of spikes from an experiment
     """
     if paths == None:
         paths = '/Users/loganfickling/Downloads/Hemo*/{}*/csvs/*spike*'.format(date)
 
     folder_paths = sorted(glob(paths))
-    # try:
-    ic = pd.concat([pd.read_csv(x) for x in folder_paths])
+
+    spike_df = pd.concat([pd.read_csv(x) for x in folder_paths])
 
     # FORMATTING spike data
-    for label, cond in ic.groupby('condition'):
-        ic.loc[ic['condition'] == label, 'condition'] = list(
-            map(lambda s: s.replace('+', '+\n'), ic.loc[ic['condition'] == label, 'condition']))
+    for label, cond in spike_df.groupby('condition'):
+        spike_df.loc[spike_df['condition'] == label, 'condition'] = list(
+            map(lambda s: s.replace('+', '+\n'), spike_df.loc[spike_df['condition'] == label, 'condition']))
         label = label.replace('+', '+\n')
         if 'gsif' in label:
             if '^-' not in label:
                 replace = np.array(list(map(lambda s: str(s).replace('gsif', 'gsif 10^-6M'), cond.condition)))
                 # np.where()
-                ic.loc[ic['condition'] == label, 'condition'] = list(
+                spike_df.loc[spike_df['condition'] == label, 'condition'] = list(
                     map(lambda s: str(s).replace('gsif', 'gsif 10^-6M'), cond.condition))
 
     if conditions != 'all':
-        ic = ic.loc[ic.condition.isin(conditions)]
+        spike_df = spike_df.loc[spike_df.condition.isin(conditions)]
 
-    return ic
+    return spike_df
 
 def load_burst_dataframe_from_date(date='10-21', conditions='all', paths=None):
-    """
+    """Load burst data from properly formatted .csv files
 
-    :param date:
-    :param conditions:
+    :param date: str, date of experiment
+    :param conditions: str, by default 'all' and returns all conditions; string of condition(s) to return
     :param paths: str, must be of specific format for glob.glob to find; {} is replaced with the date,
                 * is any character e.g. '/Users/loganfickling/Downloads/Hemo*/{}*/csvs/*spike*'
-    :return:
+    :return: burst_df, spike_df; pd.DataFrame of bursts and spikes from an experiment
+
+    Note: If there aren't any associated spike files, just loads burst data
     """
     if paths is None:
         paths = '/Users/loganfickling/Downloads/Hemo*/{}*/csvs/*bursts*'.format(date)

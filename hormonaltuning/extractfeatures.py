@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from stns import find_nearest
 from scipy.stats import zscore
 
 __all__ = ['get_ISI_per_time', 'calculate_percentile', 'split_spike_data_into_list_of_segments',
@@ -235,9 +236,6 @@ def pad_end_long_IC(long_IC_burst):
         return df
     else:
         return long_IC_burst
-
-
-from stns import find_nearest
 
 
 def calculate_long_IC_phase_each_spike(spike_df, phase_arr, long_IC_editted,

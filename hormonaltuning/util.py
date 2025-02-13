@@ -1,9 +1,14 @@
+"""util.py utility functions to aid in analyses done for (Fickling et al., 2025)
+author: Logan James Fickling github.com/LoganJF
+
+TODO: format_20min_exps_to_15mins isn't strictly necessary as a function as the variable length can be used instead
+"""
 import numpy as np
 import pandas as pd
 
 __all__ = ['formatter_throwaway',
            'reorder_df',
-           'format_20min_exps_to_15mins', # There's no real need for this function given the variable one....
+           'format_20min_exps_to_15mins',
            'combine_close_long_bursts',
            'format_spikes_variable_length_exps_to_15mins',
            'remove_first_minute_spike_data',
@@ -13,12 +18,12 @@ __all__ = ['formatter_throwaway',
            'reformat_decile_data']
 
 def formatter_throwaway(bursts_df):
-    """Allows compatibility between Logan's formatted data and Mark Beenhakker's formatted data (The Crab Analyzer)
+    """Converts Logan's formatted data to match Mark Beenhakker's format for compatibility with The Crab Analyzer.
 
-    :param bursts_df: pd.DataFrame; dataframe analogous to Mark's style
-    :return:
+    :param bursts_df: pd.DataFrame; a dataframe analogous to Mark's style
+
+    :return: pd.DataFrame; reformatted dataframe
     """
-    "Changes Logan formatted code to older formats for plotting compatability"
     bursts_df['Burst#'] = bursts_df['Burst Order']
     bursts_df['Burst Duration (sec)'] = bursts_df['Burst Duration (s)']
     bursts_df['Spike Frequency (Hz)'] = bursts_df['Spike Frequency']
@@ -29,23 +34,24 @@ def formatter_throwaway(bursts_df):
 
 
 def reorder_df(df, list_of_order, by='Condition'):
-    """Reorder a dataframe by a specified order of values corresponding to column "by"
+    """Reorders a dataframe based on the specified list of conditions.
 
-    :param df: pd.DataFrame
-    :param list_of_order: list-like, list
-    :param by: str, column to order by
+    :param df: pd.DataFrame; input dataframe
+    :param list_of_order: list-like; list of values for the column to reorder by
+    :param by: str; column name to reorder the dataframe by
 
-    :return: re-ordered dataframe
+    :return: pd.DataFrame; reordered dataframe
     """
     assert(len(list_of_order)==len(df.groupby(by)))
     return pd.concat([df[df[by]==cond]for cond in list_of_order])
 
+
 def format_20min_exps_to_15mins(_pn):
-    """Reformats a dataframe of 20 minute duration to only 15 minutes
+    """Reformats a dataframe containing 20-minute experiments to only include the first 15 minutes of data.
 
-    :param _pn: pd.DataFrame similiar to Mark's output
+    :param _pn: pd.DataFrame; input dataframe similar to Mark's output
 
-    :return: dataframe of only 15 minutes
+    :return: pd.DataFrame; dataframe with only 15 minutes of data
     """
     df = _pn.groupby('Condition', as_index=False, sort=False, group_keys=False).apply(
         _format_20min_exps_to_15mins).reset_index(drop=True)
@@ -53,7 +59,12 @@ def format_20min_exps_to_15mins(_pn):
 
 
 def _format_20min_exps_to_15mins(cond):
-    """Function actually doing the work for format_20min_exps_to_15mins
+    """Helper function that truncates data for each condition to 15 minutes.
+
+    :param cond: pd.DataFrame; data for a specific condition
+    :return: pd.DataFrame; truncated dataframe
+
+    Note: helper function, do not directly use
     """
     PD = cond.loc[cond['Neuron'] == 'PD']
     if len(PD) == 0:
@@ -67,12 +78,12 @@ def _format_20min_exps_to_15mins(cond):
 
 
 def combine_close_long_bursts(df, n=5):
-    """Combines closely occurring long IC bursts if they occur within n seconds of each other
+    """Combines long IC bursts that occur within n seconds of each other.
 
-    :param df: pd.DataFrame, must contain columns 'Start of Burst (s)', 'Burst Duration (sec)', and 'Burst Duration (s)'
-    :param n: int, default 5, time in seconds to combine close bursts over
+    :param df: pd.DataFrame; input dataframe with burst data
+    :param n: int; time in seconds within which to combine bursts
 
-    :return: df wherein close bursts are combined
+    :return: pd.DataFrame; dataframe with close bursts combined
     """
     diff_in_burst_starts = np.append(np.diff(df['Start of Burst (s)']), np.nan)
     locs_valid = np.where(diff_in_burst_starts < n)
@@ -86,11 +97,14 @@ def combine_close_long_bursts(df, n=5):
         df.iloc[locs_valid]['Burst Duration (s)'])
     return df.iloc[np.where(diff_in_burst_starts > n)[0]]
 
-def format_spikes_variable_length_exps_to_15mins(df):
-    """Formats spike data of variable length experiments into precisely 15 minutes (900s)
 
-    :param df: pd.DataFrame, must contain columns 'condition', 'neuron', and 'time'
-    :return: df with only first 900s
+def format_spikes_variable_length_exps_to_15mins(df):
+    """Formats spike data from experiments of variable length to ensure only the first 15 minutes
+       (900 seconds) are included.
+
+    :param df: pd.DataFrame; input dataframe with spike data
+
+    :return: pd.DataFrame; truncated dataframe with only the first 900 seconds
     """
     _df = df.groupby('condition', as_index=False, sort=False, group_keys=False).apply(
         _format_spikes_variable_length_exps_to_15mins).reset_index(drop=True)
@@ -98,12 +112,18 @@ def format_spikes_variable_length_exps_to_15mins(df):
 
 
 def _format_spikes_variable_length_exps_to_15mins(cond):
-    """actual func doing work under the hood for format_spikes_variable_length_exps_to_15mins, do not directly use"""
+    """Helper function that truncates spike data for each condition to 15 minutes.
+
+    :param cond: pd.DataFrame; data for a specific condition
+
+    :return: pd.DataFrame; truncated dataframe
+
+    Note: helper function, do not directly use
+    """
     PD = cond.loc[cond['neuron'] == 'PD']
     if len(PD) == 0:
         return cond
     total_time = PD.iloc[-1]['time'] - PD.iloc[0]['time']
-
     if total_time > 900:
         end_at = PD.iloc[0]['time'] + 900
         return cond.loc[cond['time'] < end_at]
@@ -112,12 +132,11 @@ def _format_spikes_variable_length_exps_to_15mins(cond):
 
 
 def remove_first_minute_spike_data(df):
-    """Remove the first minute of spike data from the dataframe
+    """Removes the first minute (60 seconds) of spike data from the dataframe.
 
-    :param df: pd.DataFrame, must contain columns 'condition', 'neuron', and 'time'
-    :return: df without the first 60s of data
+    :param df: pd.DataFrame; input dataframe with spike data
 
-    Note: Function just calls _remove_first_minute_spike_data, which does the actual work
+    :return: pd.DataFrame; dataframe with the first 60 seconds of data removed
     """
     _df = df.groupby('condition', as_index=False, sort=False, group_keys=False).apply(
         _remove_first_minute_spike_data).reset_index(drop=True)
@@ -125,56 +144,63 @@ def remove_first_minute_spike_data(df):
 
 
 def _remove_first_minute_spike_data(cond):
-    """actual func doing work for remove_first_minute_spike_data, do not directly use"""
+    """Helper function that removes the first minute of spike data for each condition.
+
+    :param cond: pd.DataFrame; data for a specific condition
+
+    :return: pd.DataFrame; truncated dataframe
+
+    Note: helper function, do not directly use
+    """
     PD = cond.loc[cond['neuron'] == 'PD']
     if len(PD) == 0:
         return cond
     remove_before = PD.iloc[0]['time'] + 60
-
     return cond.loc[cond['time'] >= remove_before]
 
 
+def return_only_desired_neurons(df, col_name='neuron', neurons_keep=['IC', 'PD', 'LG', 'DG']):
+    """Filters the dataframe to include only the specified neurons.
 
+    :param df: pd.DataFrame; input dataframe with neuron data
+    :param col_name: str; column name containing neuron data
+    :param neurons_keep: list-like; list of neuron names to keep
 
-def return_only_desired_neurons(df,
-                                col_name='neuron',
-                                neurons_keep=['IC', 'PD', 'LG', 'DG']):
-    """Removes all neurons from the dataframe unless they are in neurons_keep
-
-    :param df: pd.DataFrame, must contain a column corresponding to col_name
-    :param col_name: str, the column name containing neurons
-    :param neurons_keep: list-like, the neurons to keep
-
-    :return: the dataframe containing only the neurons in neurons_keep
+    :return: pd.DataFrame; dataframe with only the desired neurons
     """
     return df.loc[df[col_name].isin(neurons_keep)]
 
 
-# Utility functions
 def apply_diff_append_nan_pandas(dataframe, col_apply_diff_on='time', new_col_name='valid ISI'):
-    """Applies first order difference with appending of a nan value to the end, returns as dataframe
+    """Applies the first-order difference to the specified column and appends a NaN value to the result.
 
-    :param dataframe: pd.DataFrame
-    :param col_apply_diff_on: str, column to apply difference on
-    :param new_col_name: str, name assigned to new column
+    :param dataframe: pd.DataFrame; input dataframe
+    :param col_apply_diff_on: str; column to apply the difference to
+    :param new_col_name: str; name of the new column with the differences
 
-
-    Note: apply on a dataframe already grouped by neuron and condition
+    :return: pd.DataFrame; dataframe with the differences appended as a new column
     """
-    isi = np.append(np.diff(dataframe[col_apply_diff_on]), np.nan)
-    return pd.DataFrame(isi, columns=[new_col_name])
+    diff_df = np.append(np.diff(dataframe[col_apply_diff_on]), np.nan)
+    return pd.DataFrame(diff_df, columns=[new_col_name])
 
 
 def inverse(df):
-    """Calculate the inverse of an array/dataframe
+    """Computes the inverse of an array or dataframe (1 / value).
 
-    :param df: array-like or pd.DataFrame
-    :return: 1 / df
+    :param df: array-like or pd.DataFrame; input data
+
+    :return: array-like or pd.DataFrame; inverse of the input data
     """
     return 1 / df
 
+
 def reformat_decile_data(decile_df):
-    """Reformats a dadtaframe with a cell containing lists to columns for each value of the list"""
+    """Reformats a dataframe containing lists in cells into separate columns for each value in the list.
+
+    :param decile_df: pd.DataFrame or pd.Series; input dataframe or series with list values
+
+    :return: pd.DataFrame; reformatted dataframe with lists expanded into separate columns
+    """
     if type(decile_df) == pd.Series:
         decile_df = decile_df.reset_index()
 
