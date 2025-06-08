@@ -10,10 +10,11 @@ __all__ = ['get_ISI_per_time', 'calculate_percentile', 'split_spike_data_into_li
 
 
 def get_ISI_per_time(df, time_range):
-    """
+    """Returns interspike intervals for a neuron, depreciated do not use
 
-    :param df:
-    :param time_range:
+    :param df: pd.DataFrame, must contain columns 'time', and 'neuron'
+    :param time_range: np.array like, array of time values
+
     :return:
     """
     binned_ISI = []
