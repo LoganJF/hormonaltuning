@@ -1,0 +1,7 @@
+[project]
+name = "hormonaltuning"
+version = "0.1.0"
+description = "A collection of the functions used to produce analyses seen in (Fickling et al., 2025, Journal of Neurophysiology)"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
