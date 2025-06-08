@@ -1,9 +1,9 @@
 # hormonaltuning
-A collection of functions, and examples associated with (Fickling et al., 2025), project ought not be used until ~ April 2025 when documentation, testing, and proper packaging is complete. But, feel free to take a gander now iffin you wish.
+A collection of the functions used to produce analyses seen in (Fickling et al., 2025, Journal of Neurophysiology).
 
 How do I use hormonaltuning?
 -------------
-hormonaltuning is used primarily for spike feature extraction (requiring neural spike which are already detected, see github.com/LoganJF/stns), as well as clustering of these spikes using various approaches. If one is interested in replicating/reproducing/extending the analyses seen in (Fickling et al., 2025), this is a good palce to start!
+hormonaltuning is used primarily for spike feature extraction (requiring neural spike which are already detected, see github.com/LoganJF/stns), as well as clustering of these spikes using various approaches. If one is interested in replicating/reproducing/extending the analyses seen in (Fickling et al., 2025), this is a good place to start!
 
 ```python
 from hormontaltuning import feature_extraction_preprocessing_pipeline
@@ -47,10 +47,9 @@ for date in SSUS_exps:
 print('Total time to process data: ', time()-start_time)
 ```
 
-See the documentation, or example folder, for more examples, or in python call help(functionname) to pull up the docstrings of the relevant functions
+See the documentation, or example folder, for more details or examples. In python you can call help(functionname) to pull up the docstrings of the relevant functions.
 
-hormonaltuning is currently in development; some features have not yet been implemented.
-See 'Development status' below.
+hormonaltuning is currently in development.
 
 Requirements
 ------------
@@ -72,7 +71,7 @@ stns [will ultimately be removed]
 Quick start
 -----------
 
-hormonaltuning will be able to be installed using pip [~March 2025]:
+hormonaltuning will be able to be installed using pip [~July 2025]:
 
     $ pip install hormonaltuning
 
