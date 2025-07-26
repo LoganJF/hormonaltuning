@@ -167,22 +167,21 @@ def check_all_neurons_included_add_filler_if_not(df, neuron_list=['IC', 'PD', 'L
 def calculate_burstiness(df, maximum_value=50):
     """Metric to capture how burst like a train of spikes is
 
-    :param df:
-    :param maximum_value:
-    :return:
+    :param df: pd.DataFrame, must contain column times
+    :param maximum_value: int, values above this are reset to this
+    :return: burstiness, float
 
     Note: Make sure to use groupby first
     """
-    isi = np.append(np.diff(df['time']), -999)
+    isi = np.append(np.diff(df['time']),np.nan)
     sorted_isi = np.sort(isi)
-    isi_gaps = np.append(np.diff(sorted_isi), -999)
-    max_gap, pos = np.max(isi_gaps), np.argmax(isi_gaps)
+    isi_gaps = np.append(np.diff(sorted_isi), np.nan)
+    max_gap, pos = np.nanmax(isi_gaps), np.nanargmax(isi_gaps)
     burstiness = max_gap / isi[pos]
 
     if burstiness > maximum_value:
         burstiness = maximum_value
     return burstiness
-
 
 
 def create_phase_space_arr_from_long_IC(combined_long_IC_bursts, phase_space=100):
